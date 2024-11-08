@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Column;
 
 @Entity
 public class Room {
@@ -15,7 +16,10 @@ public class Room {
     private String name;
     private String description;
     private int capacity;
-    private boolean available;
+
+    // Updated available field, to track availability of the room
+    @Column(name = "is_available", columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private boolean available = true; // Default to available
 
     // Getters and Setters
     public Long getId() {
@@ -56,5 +60,16 @@ public class Room {
 
     public void setAvailable(boolean available) {
         this.available = available;
+    }
+
+    @Override
+    public String toString() {
+        return "Room{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", capacity=" + capacity +
+                ", available=" + available +
+                '}';
     }
 }

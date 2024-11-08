@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Room Dashboard</title>
+</head>
+<body>
+    <h1>Room Dashboard</h1>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Room Name</th>
+                <th>Room Type</th>
+                <th>Capacity</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Iterate over the list of rooms passed from the controller -->
+            <tr th:each="room : ${rooms}">
+                <td th:text="${room.name}"></td>
+                <td th:text="${room.roomType}"></td>
+                <td th:text="${room.capacity}"></td>
+                <td th:text="${room.isAvailable ? 'Available' : 'Unavailable'}"></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

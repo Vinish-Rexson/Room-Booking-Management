@@ -1,11 +1,6 @@
 package com.example.roombooking.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
@@ -16,7 +11,11 @@ public class Booking {
     private Long id;
 
     @ManyToOne
-    private Room room;  // Relationship with Room entity
+    @JoinColumn(name = "room_id", nullable = false)
+    private Room room;
+
+    @Column(nullable = false)
+    private String customerName;
 
     @Column(nullable = false)
     private LocalDate checkInDate;
@@ -24,9 +23,8 @@ public class Booking {
     @Column(nullable = false)
     private LocalDate checkOutDate;
 
-    private String customerName;
-
     // Getters and Setters
+
     public Long getId() {
         return id;
     }
@@ -43,6 +41,14 @@ public class Booking {
         this.room = room;
     }
 
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
     public LocalDate getCheckInDate() {
         return checkInDate;
     }
@@ -57,13 +63,5 @@ public class Booking {
 
     public void setCheckOutDate(LocalDate checkOutDate) {
         this.checkOutDate = checkOutDate;
-    }
-
-    public String getCustomerName() {
-        return customerName;
-    }
-
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
     }
 }
