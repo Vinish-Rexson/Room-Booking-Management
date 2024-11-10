@@ -75,6 +75,12 @@
 			<version>8.0.33</version> <!-- Add the version here -->
 		</dependency>
 
+		<dependency>
+			<groupId>org.webjars.npm</groupId>
+			<artifactId>fullcalendar</artifactId>
+			<version>5.11.3</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

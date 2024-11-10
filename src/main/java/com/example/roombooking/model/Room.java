@@ -21,6 +21,11 @@ public class Room {
     @Column(name = "is_available", columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean available = true; // Default to available
 
+    private Double pricePerNight;
+    private Boolean hasWifi = false;
+    private Boolean hasTV = false;
+    private Boolean hasAC = false;
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -62,6 +67,38 @@ public class Room {
         this.available = available;
     }
 
+    public Double getPricePerNight() {
+        return pricePerNight;
+    }
+
+    public void setPricePerNight(Double pricePerNight) {
+        this.pricePerNight = pricePerNight;
+    }
+
+    public Boolean getHasWifi() {
+        return hasWifi;
+    }
+
+    public void setHasWifi(Boolean hasWifi) {
+        this.hasWifi = hasWifi;
+    }
+
+    public Boolean getHasTV() {
+        return hasTV;
+    }
+
+    public void setHasTV(Boolean hasTV) {
+        this.hasTV = hasTV;
+    }
+
+    public Boolean getHasAC() {
+        return hasAC;
+    }
+
+    public void setHasAC(Boolean hasAC) {
+        this.hasAC = hasAC;
+    }
+
     @Override
     public String toString() {
         return "Room{" +
@@ -70,6 +107,10 @@ public class Room {
                 ", description='" + description + '\'' +
                 ", capacity=" + capacity +
                 ", available=" + available +
+                ", pricePerNight=" + pricePerNight +
+                ", hasWifi=" + hasWifi +
+                ", hasTV=" + hasTV +
+                ", hasAC=" + hasAC +
                 '}';
     }
 }

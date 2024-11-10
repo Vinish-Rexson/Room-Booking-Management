@@ -132,8 +132,7 @@ public class BookingController {
             
             if (!bookings.isEmpty()) {
                 Booking booking = bookings.get(0);
-                // Reset room capacity
-                room.setCapacity(room.getCapacity() + booking.getNumberOfGuests());
+                // Mark room as available again
                 room.setAvailable(true);
                 roomRepository.save(room);
                 bookingRepository.delete(booking);
@@ -171,5 +170,10 @@ public class BookingController {
         }
         
         return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/room-management")
+    public String showRoomManagement() {
+        return "room-management";
     }
 }

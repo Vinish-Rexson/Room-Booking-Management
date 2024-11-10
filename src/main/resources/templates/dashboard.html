@@ -78,24 +78,36 @@
             color: var(--accent-color);
         }
 
-        .rooms-table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border-radius: 5px;
+        .room-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
             margin-bottom: 20px;
         }
 
-        .rooms-table th, .rooms-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
+        .room-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .rooms-table th {
-            background-color: var(--primary-color);
-            color: white;
+        .room-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .room-info {
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+
+        .room-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin: 10px 0;
         }
 
         .status-available {
@@ -134,6 +146,114 @@
         .btn-danger:hover {
             background-color: #a93226;
         }
+
+        .controls-container {
+            margin-bottom: 20px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .search-filters {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-select {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+        }
+
+        .room-card {
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .room-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .room-features {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        .feature-tag {
+            background-color: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .booking-info {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .just-booked {
+            animation: pulse 1s;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border-radius: 4px;
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: var(--primary-color);
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .btn-profile {
+            background-color: transparent;
+            border: 1px solid white;
+        }
     </style>
 </head>
 <body>
@@ -144,6 +264,17 @@
                 <a href="/dashboard">Dashboard</a>
                 <a href="/rooms">Manage Rooms</a>
                 <a href="/book-room">Book a Room</a>
+            </div>
+            <div class="user-profile">
+                <span class="user-name">Welcome, ${user.name}</span>
+                <div class="dropdown">
+                    <button class="btn btn-profile">My Profile</button>
+                    <div class="dropdown-content">
+                        <a href="/profile">View Profile</a>
+                        <a href="/my-bookings">My Bookings</a>
+                        <a href="/logout">Logout</a>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -166,22 +297,41 @@
                 <h3>Occupied Rooms</h3>
                 <p id="occupiedRooms" class="stat-number">0</p>
             </div>
+            <div class="stat-card">
+                <h3>Bookings Today</h3>
+                <p id="todayBookings" class="stat-number">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Average Stay Duration</h3>
+                <p id="avgStayDuration" class="stat-number">0 days</p>
+            </div>
         </div>
 
-        <table class="rooms-table">
-            <thead>
-                <tr>
-                    <th>Room Name</th>
-                    <th>Description</th>
-                    <th>Capacity</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="roomsTableBody">
-                <!-- Table rows will be inserted here by JavaScript -->
-            </tbody>
-        </table>
+        <div class="controls-container">
+            <div class="search-filters">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search rooms...">
+                <select id="filterStatus" class="filter-select">
+                    <option value="all">All Rooms</option>
+                    <option value="available">Available</option>
+                    <option value="occupied">Occupied</option>
+                </select>
+                <select id="filterCapacity" class="filter-select">
+                    <option value="all">Any Capacity</option>
+                    <option value="1-2">1-2 People</option>
+                    <option value="3-4">3-4 People</option>
+                    <option value="5+">5+ People</option>
+                </select>
+                <select id="sortBy" class="filter-select">
+                    <option value="name">Sort by Name</option>
+                    <option value="capacity">Sort by Capacity</option>
+                    <option value="status">Sort by Status</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="roomsGrid" class="room-grid">
+            <!-- Room cards will be inserted here by JavaScript -->
+        </div>
 
         <div class="action-buttons">
             <a href="/book-room" class="btn btn-primary">Book a Room</a>
@@ -190,8 +340,7 @@
     </div>
 
     <script>
-        // Fetch rooms data from backend
-        fetch('/api/rooms')
+        fetch('/api/manage/rooms')
             .then(response => response.json())
             .then(rooms => {
                 updateDashboard(rooms);
@@ -200,13 +349,12 @@
 
         function checkoutRoom(roomId) {
             if (confirm('Are you sure you want to check out this room?')) {
-                fetch(`/api/checkout/${roomId}`, {
+                fetch(`/api/manage/rooms/${roomId}/checkout`, {
                     method: 'POST'
                 })
                 .then(response => {
                     if (response.ok) {
-                        // Refresh the dashboard
-                        fetch('/api/rooms')
+                        fetch('/api/manage/rooms')
                             .then(response => response.json())
                             .then(rooms => {
                                 updateDashboard(rooms);
@@ -224,31 +372,149 @@
 
         function updateDashboard(rooms) {
             // Update statistics
+            const stats = calculateStats(rooms);
             document.getElementById('totalRooms').textContent = rooms.length;
-            document.getElementById('availableRooms').textContent = rooms.filter(r => r.available).length;
-            document.getElementById('occupiedRooms').textContent = rooms.filter(r => !r.available).length;
+            document.getElementById('availableRooms').textContent = stats.availableCount;
+            document.getElementById('occupiedRooms').textContent = stats.occupiedCount;
+            document.getElementById('todayBookings').textContent = stats.todayBookings;
+            document.getElementById('avgStayDuration').textContent = `${stats.avgStayDuration} days`;
 
-            // Update table
-            const tableBody = document.getElementById('roomsTableBody');
-            tableBody.innerHTML = rooms.map(room => `
-                <tr>
-                    <td>${room.name}</td>
-                    <td>${room.description}</td>
-                    <td>${room.capacity}</td>
-                    <td>
-                        <span class="status-badge ${room.available ? 'status-available' : 'status-unavailable'}">
-                            ${room.available ? 'Available' : 'Occupied'}
-                        </span>
-                    </td>
-                    <td>
+            // Apply filters
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('filterStatus').value;
+            const capacityFilter = document.getElementById('filterCapacity').value;
+            const sortBy = document.getElementById('sortBy').value;
+
+            let filteredRooms = rooms.filter(room => {
+                const matchesSearch = room.name.toLowerCase().includes(searchTerm) || 
+                                    room.description.toLowerCase().includes(searchTerm);
+                const matchesStatus = statusFilter === 'all' || 
+                                    (statusFilter === 'available' && room.available) ||
+                                    (statusFilter === 'occupied' && !room.available);
+                const matchesCapacity = filterByCapacity(room.capacity, capacityFilter);
+                
+                return matchesSearch && matchesStatus && matchesCapacity;
+            });
+
+            // Sort rooms
+            filteredRooms = sortRooms(filteredRooms, sortBy);
+
+            // Update room grid
+            const roomsGrid = document.getElementById('roomsGrid');
+            roomsGrid.innerHTML = filteredRooms.map(room => `
+                <div class="room-card ${room.justBooked ? 'just-booked' : ''}">
+                    <div class="price-tag">$${room.pricePerNight}/night</div>
+                    <div class="room-name">${room.name}</div>
+                    <div class="room-status ${room.available ? 'status-available' : 'status-unavailable'}">
+                        ${room.available ? 'Available' : 'Occupied'}
+                    </div>
+                    <div class="room-info">
+                        <div><strong>Description:</strong> ${room.description}</div>
+                        <div><strong>Capacity:</strong> ${room.capacity} persons</div>
+                    </div>
+                    <div class="room-features">
+                        ${generateFeatureTags(room)}
+                    </div>
+                    ${room.currentBooking ? `
+                        <div class="booking-info">
+                            <div>Check-in: ${formatDate(room.currentBooking.checkInDate)}</div>
+                            <div>Check-out: ${formatDate(room.currentBooking.checkOutDate)}</div>
+                        </div>
+                    ` : ''}
+                    <div class="action-buttons">
                         ${room.available ? 
-                            `<a href="/book-room?roomId=${room.id}" class="btn btn-primary">Book</a>` : 
+                            `<a href="/book-room?roomId=${room.id}" class="btn btn-primary">Book Now</a>` : 
                             `<a href="/checkout/${room.id}" class="btn btn-danger">Check Out</a>`
                         }
-                    </td>
-                </tr>
+                    </div>
+                </div>
             `).join('');
         }
+
+        function calculateStats(rooms) {
+            const availableCount = rooms.filter(r => r.available).length;
+            const occupiedCount = rooms.length - availableCount;
+            const todayBookings = rooms.filter(r => r.currentBooking && 
+                isToday(new Date(r.currentBooking.checkInDate))).length;
+            
+            const durations = rooms
+                .filter(r => r.currentBooking)
+                .map(r => calculateDuration(r.currentBooking.checkInDate, r.currentBooking.checkOutDate));
+            const avgStayDuration = durations.length ? 
+                Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : 0;
+
+            return { availableCount, occupiedCount, todayBookings, avgStayDuration };
+        }
+
+        function filterByCapacity(capacity, filter) {
+            switch(filter) {
+                case '1-2': return capacity <= 2;
+                case '3-4': return capacity > 2 && capacity <= 4;
+                case '5+': return capacity >= 5;
+                default: return true;
+            }
+        }
+
+        function sortRooms(rooms, sortBy) {
+            return [...rooms].sort((a, b) => {
+                switch(sortBy) {
+                    case 'name': return a.name.localeCompare(b.name);
+                    case 'capacity': return b.capacity - a.capacity;
+                    case 'status': return a.available === b.available ? 0 : a.available ? -1 : 1;
+                    default: return 0;
+                }
+            });
+        }
+
+        function generateFeatureTags(room) {
+            const features = [];
+            if (room.hasWifi) features.push('WiFi');
+            if (room.hasTV) features.push('TV');
+            if (room.hasAC) features.push('AC');
+            return features.map(f => `<span class="feature-tag">${f}</span>`).join('');
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString();
+        }
+
+        function isToday(date) {
+            const today = new Date();
+            return date.getDate() === today.getDate() &&
+                   date.getMonth() === today.getMonth() &&
+                   date.getFullYear() === today.getFullYear();
+        }
+
+        function calculateDuration(checkIn, checkOut) {
+            return Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+        }
+
+        // Add event listeners for filters
+        document.getElementById('searchInput').addEventListener('input', () => {
+            fetch('/api/manage/rooms').then(response => response.json()).then(updateDashboard);
+        });
+
+        document.getElementById('filterStatus').addEventListener('change', () => {
+            fetch('/api/manage/rooms').then(response => response.json()).then(updateDashboard);
+        });
+
+        document.getElementById('filterCapacity').addEventListener('change', () => {
+            fetch('/api/manage/rooms').then(response => response.json()).then(updateDashboard);
+        });
+
+        document.getElementById('sortBy').addEventListener('change', () => {
+            fetch('/api/manage/rooms').then(response => response.json()).then(updateDashboard);
+        });
+
+        // Add auto-refresh every 30 seconds
+        setInterval(() => {
+            fetch('/api/manage/rooms')
+                .then(response => response.json())
+                .then(rooms => {
+                    updateDashboard(rooms);
+                })
+                .catch(error => console.error('Error fetching rooms:', error));
+        }, 30000);
     </script>
 </body>
 </html> 

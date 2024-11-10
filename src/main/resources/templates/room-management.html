@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Room Management</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Copy root and basic styles from dashboard.html */
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --danger-color: #c0392b;
+        }
+
+        .room-management-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px;
+        }
+
+        .add-room-form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .features-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .feature-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Include navbar from dashboard.html -->
+
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>Room Management</h1>
+        </div>
+
+        <div class="room-management-grid">
+            <div class="add-room-form">
+                <h2>Add New Room</h2>
+                <form id="addRoomForm">
+                    <div class="form-group">
+                        <label for="name">Room Name</label>
+                        <input type="text" id="name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <input type="text" id="description" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="capacity">Capacity</label>
+                        <input type="number" id="capacity" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pricePerNight">Price per Night</label>
+                        <input type="number" id="pricePerNight" min="0" step="0.01" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Features</label>
+                        <div class="features-group">
+                            <div class="feature-checkbox">
+                                <input type="checkbox" id="hasWifi">
+                                <label for="hasWifi">WiFi</label>
+                            </div>
+                            <div class="feature-checkbox">
+                                <input type="checkbox" id="hasTV">
+                                <label for="hasTV">TV</label>
+                            </div>
+                            <div class="feature-checkbox">
+                                <input type="checkbox" id="hasAC">
+                                <label for="hasAC">AC</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Add Room</button>
+                </form>
+            </div>
+
+            <div id="roomsList">
+                <!-- Rooms will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add room form handler
+        document.getElementById('addRoomForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const roomData = {
+                name: document.getElementById('name').value,
+                description: document.getElementById('description').value,
+                capacity: parseInt(document.getElementById('capacity').value),
+                pricePerNight: parseFloat(document.getElementById('pricePerNight').value),
+                hasWifi: document.getElementById('hasWifi').checked,
+                hasTV: document.getElementById('hasTV').checked,
+                hasAC: document.getElementById('hasAC').checked
+            };
+
+            try {
+                const response = await fetch('/api/rooms', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(roomData)
+                });
+
+                if (response.ok) {
+                    loadRooms();
+                    e.target.reset();
+                }
+            } catch (error) {
+                console.error('Error adding room:', error);
+            }
+        });
+
+        // Load and display rooms
+        async function loadRooms() {
+            try {
+                const response = await fetch('/api/rooms');
+                const rooms = await response.json();
+                
+                const roomsList = document.getElementById('roomsList');
+                roomsList.innerHTML = rooms.map(room => `
+                    <div class="room-card">
+                        <h3>${room.name}</h3>
+                        <p>${room.description}</p>
+                        <div class="room-details">
+                            <div>Capacity: ${room.capacity}</div>
+                            <div>Price: $${room.pricePerNight}/night</div>
+                        </div>
+                        <div class="room-features">
+                            ${room.hasWifi ? '<span class="feature-tag">WiFi</span>' : ''}
+                            ${room.hasTV ? '<span class="feature-tag">TV</span>' : ''}
+                            ${room.hasAC ? '<span class="feature-tag">AC</span>' : ''}
+                        </div>
+                        <button onclick="deleteRoom(${room.id})" class="btn btn-danger">Delete</button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading rooms:', error);
+            }
+        }
+
+        // Delete room handler
+        async function deleteRoom(roomId) {
+            if (confirm('Are you sure you want to delete this room?')) {
+                try {
+                    const response = await fetch(`/api/rooms/${roomId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        loadRooms();
+                    }
+                } catch (error) {
+                    console.error('Error deleting room:', error);
+                }
+            }
+        }
+
+        // Initial load
+        loadRooms();
+    </script>
+</body>
+</html> 

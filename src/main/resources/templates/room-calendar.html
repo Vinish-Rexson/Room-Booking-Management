@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Availability Calendar</title>
+    
+    <!-- FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/@fullcalendar/core@5.11.3/main.min.css' rel='stylesheet' />
+    <link href='https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@5.11.3/main.min.css' rel='stylesheet' />
+    
+    <style>
+        .calendar-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .room-filter {
+            margin-bottom: 20px;
+        }
+
+        .fc-event {
+            cursor: pointer;
+        }
+
+        .fc-event-title {
+            font-weight: bold;
+        }
+
+        .booking-available {
+            background-color: #2ecc71 !important;
+            border-color: #27ae60 !important;
+        }
+
+        .booking-occupied {
+            background-color: #e74c3c !important;
+            border-color: #c0392b !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Include navbar from fragments/header.html -->
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="calendar-container">
+        <div class="room-filter">
+            <label for="roomFilter">Filter by Room:</label>
+            <select id="roomFilter">
+                <option value="all">All Rooms</option>
+            </select>
+        </div>
+        <div id="calendar"></div>
+    </div>
+
+    <!-- FullCalendar JS -->
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@5.11.3/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@5.11.3/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@5.11.3/main.min.js'></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,dayGridWeek'
+                },
+                events: function(fetchInfo, successCallback, failureCallback) {
+                    const roomFilter = document.getElementById('roomFilter').value;
+                    
+                    fetch(`/api/calendar/availability?start=${fetchInfo.startStr}&end=${fetchInfo.endStr}&roomId=${roomFilter}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const events = data.map(booking => ({
+                                title: `${booking.roomName} - ${booking.customerName || 'Available'}`,
+                                start: booking.checkInDate,
+                                end: booking.checkOutDate,
+                                className: booking.available ? 'booking-available' : 'booking-occupied',
+                                extendedProps: {
+                                    roomId: booking.roomId,
+                                    bookingId: booking.id,
+                                    customerName: booking.customerName
+                                }
+                            }));
+                            successCallback(events);
+                        })
+                        .catch(error => {
+                            console.error('Error fetching events:', error);
+                            failureCallback(error);
+                        });
+                },
+                eventClick: function(info) {
+                    if (!info.event.extendedProps.available) {
+                        window.location.href = `/booking/${info.event.extendedProps.bookingId}`;
+                    } else {
+                        window.location.href = `/book-room?roomId=${info.event.extendedProps.roomId}&date=${info.event.startStr}`;
+                    }
+                }
+            });
+            calendar.render();
+
+            // Populate room filter
+            fetch('/api/manage/rooms')
+                .then(response => response.json())
+                .then(rooms => {
+                    const roomFilter = document.getElementById('roomFilter');
+                    rooms.forEach(room => {
+                        const option = document.createElement('option');
+                        option.value = room.id;
+                        option.textContent = room.name;
+                        roomFilter.appendChild(option);
+                    });
+                });
+
+            // Add event listener for room filter
+            document.getElementById('roomFilter').addEventListener('change', function() {
+                calendar.refetchEvents();
+            });
+        });
+    </script>
+</body>
+</html> 
