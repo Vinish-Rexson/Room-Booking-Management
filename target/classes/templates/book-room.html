@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"></head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-brand">Room Booking System</a>
+            <div class="navbar-links">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/rooms">Manage Rooms</a>
+                <a href="/book-room">Book a Room</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <h1>Book a Room</h1>
+
+            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+            <form th:action="@{/book-room}" method="post" class="booking-form">
+                <div class="form-group">
+                    <label for="customerName">Your Name</label>
+                    <input type="text" id="customerName" name="customerName" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="roomId">Select Room</label>
+                    <select id="roomId" name="roomId" class="form-control" required>
+                        <option value="">Choose a room...</option>
+                        <option th:each="room : ${rooms}" 
+                                th:if="${room.available}"
+                                th:value="${room.id}" 
+                                th:text="${room.name + ' (Capacity: ' + room.capacity + ')'}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="numberOfGuests">Number of Guests</label>
+                    <input type="number" id="numberOfGuests" name="numberOfGuests" class="form-control" 
+                           min="1" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="checkInDate">Check-in Date</label>
+                    <input type="date" id="checkInDate" name="checkInDate" class="form-control" 
+                           th:min="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="checkOutDate">Check-out Date</label>
+                    <input type="date" id="checkOutDate" name="checkOutDate" class="form-control" 
+                           th:min="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Book Now</button>
+                <a href="/dashboard" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

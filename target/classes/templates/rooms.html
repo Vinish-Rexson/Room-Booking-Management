@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rooms</title>
+    <style>
+        .status-available {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .status-unavailable {
+            color: #c0392b;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <h1>Room List</h1>
+
+    <!-- Display rooms -->
+    <table>
+        <thead>
+            <tr>
+                <th>Room Name</th>
+                <th>Description</th>
+                <th>Capacity</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="room : ${rooms}">
+                <td th:text="${room.name}"></td>
+                <td th:text="${room.description}"></td>
+                <td th:text="${room.capacity}"></td>
+                <td>
+                    <span th:class="${room.available ? 'status-available' : 'status-unavailable'}"
+                          th:text="${room.available ? 'Available' : 'Not Available'}">
+                    </span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Add a new Room</h2>
+    <form action="/rooms/add" method="POST">
+        <label for="name">Room Name:</label><br>
+        <input type="text" id="name" name="name" required><br>
+        
+        <label for="description">Description:</label><br>
+        <input type="text" id="description" name="description" required><br>
+        
+        <label for="capacity">Capacity:</label><br>
+        <input type="number" id="capacity" name="capacity" required><br>
+        
+        <button type="submit">Add Room</button>
+    </form>
+</body>
+</html>
