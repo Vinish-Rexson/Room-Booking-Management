@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Availability Calendar</title>
+    
+    <!-- FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/@fullcalendar/core@5.11.3/main.min.css' rel='stylesheet' />
+    <link href='https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@5.11.3/main.min.css' rel='stylesheet' />
+    
+    <style>
+        .calendar-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .room-filter {
+            margin-bottom: 20px;
+        }
+        .fc-event { cursor: pointer; }
+        .fc-event-title { font-weight: bold; }
+        .booking-available {
+            background-color: #2ecc71 !important;
+            border-color: #27ae60 !important;
+        }
+        .booking-occupied {
+            background-color: #e74c3c !important;
+            border-color: #c0392b !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="calendar-container">
+        <div class="room-filter">
+            <label for="roomFilter">Filter by Room:</label>
+            <select id="roomFilter">
+                <option value="all">All Rooms</option>
+            </select>
+        </div>
+        <div id="calendar"></div>
+    </div>
+
+    <!-- FullCalendar JS -->
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@5.11.3/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@5.11.3/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@5.11.3/main.min.js'></script>
+    <script src="js/calendar.js"></script>
+</body>
+</html> 

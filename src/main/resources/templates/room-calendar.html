@@ -1,13 +1,12 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Room Availability Calendar</title>
     
     <!-- FullCalendar CSS -->
-    <link href='https://cdn.jsdelivr.net/npm/@fullcalendar/core@5.11.3/main.min.css' rel='stylesheet' />
-    <link href='https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@5.11.3/main.min.css' rel='stylesheet' />
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
     
     <style>
         .calendar-container {
@@ -57,13 +56,12 @@
     </div>
 
     <!-- FullCalendar JS -->
-    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@5.11.3/main.min.js'></script>
-    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@5.11.3/main.min.js'></script>
-    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@5.11.3/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            let calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 headerToolbar: {
                     left: 'prev,next today',
@@ -72,40 +70,26 @@
                 },
                 events: function(fetchInfo, successCallback, failureCallback) {
                     const roomFilter = document.getElementById('roomFilter').value;
-                    
-                    fetch(`/api/calendar/availability?start=${fetchInfo.startStr}&end=${fetchInfo.endStr}&roomId=${roomFilter}`)
+                    fetch(`/api/calendar/availability?start=${fetchInfo.startStr}&end=${fetchInfo.endStr}&roomId=${roomFilter === 'all' ? '' : roomFilter}`)
                         .then(response => response.json())
                         .then(data => {
-                            const events = data.map(booking => ({
+                            successCallback(data.map(booking => ({
                                 title: `${booking.roomName} - ${booking.customerName || 'Available'}`,
                                 start: booking.checkInDate,
                                 end: booking.checkOutDate,
-                                className: booking.available ? 'booking-available' : 'booking-occupied',
-                                extendedProps: {
-                                    roomId: booking.roomId,
-                                    bookingId: booking.id,
-                                    customerName: booking.customerName
-                                }
-                            }));
-                            successCallback(events);
+                                className: booking.available ? 'booking-available' : 'booking-occupied'
+                            })));
                         })
                         .catch(error => {
-                            console.error('Error fetching events:', error);
+                            console.error('Error:', error);
                             failureCallback(error);
                         });
-                },
-                eventClick: function(info) {
-                    if (!info.event.extendedProps.available) {
-                        window.location.href = `/booking/${info.event.extendedProps.bookingId}`;
-                    } else {
-                        window.location.href = `/book-room?roomId=${info.event.extendedProps.roomId}&date=${info.event.startStr}`;
-                    }
                 }
             });
             calendar.render();
 
-            // Populate room filter
-            fetch('/api/manage/rooms')
+            // Load rooms for filter
+            fetch('/api/rooms')
                 .then(response => response.json())
                 .then(rooms => {
                     const roomFilter = document.getElementById('roomFilter');
@@ -116,11 +100,6 @@
                         roomFilter.appendChild(option);
                     });
                 });
-
-            // Add event listener for room filter
-            document.getElementById('roomFilter').addEventListener('change', function() {
-                calendar.refetchEvents();
-            });
         });
     </script>
 </body>
