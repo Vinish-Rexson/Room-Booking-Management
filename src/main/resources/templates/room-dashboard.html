@@ -1,100 +1,198 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html>
 <head>
-    <title>Room Dashboard</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Dashboard</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f5f5f5;
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --background-color: #f5f5f5;
         }
-        .container {
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            background-color: var(--background-color);
+        }
+
+        .navbar {
+            background-color: var(--primary-color);
+            padding: 1rem;
+        }
+
+        .navbar-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        h1 {
-            color: #2c3e50;
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 1.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
             text-align: center;
-            margin-bottom: 30px;
         }
-        table {
+
+        .table {
             width: 100%;
             border-collapse: collapse;
-            background-color: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-            margin-bottom: 20px;
+            margin: 1rem 0;
         }
-        th, td {
-            padding: 12px 15px;
+
+        .table th, .table td {
+            padding: 1rem;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
-        th {
-            background-color: #34495e;
+
+        .table th {
+            background-color: var(--primary-color);
             color: white;
         }
-        tr:hover {
-            background-color: #f5f5f5;
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
         }
+
         .status-available {
-            color: #27ae60;
-            font-weight: bold;
+            background-color: #e8f5e9;
+            color: var(--success-color);
         }
+
         .status-unavailable {
-            color: #c0392b;
-            font-weight: bold;
+            background-color: #ffebee;
+            color: var(--danger-color);
         }
-        .actions {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .button {
+
+        .btn {
             display: inline-block;
-            padding: 10px 20px;
-            margin: 0 10px;
-            background-color: #3498db;
-            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
             text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
+            cursor: pointer;
+            color: white;
         }
-        .button:hover {
-            background-color: #2980b9;
+
+        .btn-primary {
+            background-color: var(--accent-color);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Room Dashboard</h1>
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>Room Name</th>
-                    <th>Room Type</th>
-                    <th>Capacity</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="room : ${rooms}">
-                    <td th:text="${room.name}"></td>
-                    <td th:text="${room.description}"></td>
-                    <td th:text="${room.capacity}"></td>
-                    <td th:class="${room.available ? 'status-available' : 'status-unavailable'}"
-                        th:text="${room.available ? 'Available' : 'Unavailable'}">
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" style="font-size: 1.5rem; font-weight: bold;">Room Booking System</a>
+            <div>
+                <a href="/dashboard">Dashboard</a>
+                <a href="/rooms">Manage Rooms</a>
+                <a href="/book-room">Book a Room</a>
+            </div>
+        </div>
+    </nav>
 
-        <div class="actions">
-            <a href="/book-room" class="button">Book a Room</a>
-            <a href="/rooms" class="button">Manage Rooms</a>
+    <div class="container">
+        <div class="card">
+            <h1>Room Dashboard</h1>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Rooms</h3>
+                    <p id="totalRooms">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Available Rooms</h3>
+                    <p id="availableRooms">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Occupied Rooms</h3>
+                    <p id="occupiedRooms">0</p>
+                </div>
+            </div>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Room Name</th>
+                        <th>Description</th>
+                        <th>Capacity</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="roomsTableBody">
+                    <!-- Table rows will be inserted here by JavaScript -->
+                </tbody>
+            </table>
         </div>
     </div>
+
+    <script>
+        // Fetch rooms data from backend
+        fetch('/api/rooms')
+            .then(response => response.json())
+            .then(rooms => {
+                updateDashboard(rooms);
+            });
+
+        function updateDashboard(rooms) {
+            // Update statistics
+            document.getElementById('totalRooms').textContent = rooms.length;
+            document.getElementById('availableRooms').textContent = rooms.filter(r => r.available).length;
+            document.getElementById('occupiedRooms').textContent = rooms.filter(r => !r.available).length;
+
+            // Update table
+            const tableBody = document.getElementById('roomsTableBody');
+            tableBody.innerHTML = rooms.map(room => `
+                <tr>
+                    <td>${room.name}</td>
+                    <td>${room.description}</td>
+                    <td>${room.capacity}</td>
+                    <td>
+                        <span class="status-badge ${room.available ? 'status-available' : 'status-unavailable'}">
+                            ${room.available ? 'Available' : 'Unavailable'}
+                        </span>
+                    </td>
+                    <td>
+                        ${room.available ? 
+                            `<a href="/book-room?roomId=${room.id}" class="btn btn-primary">Book</a>` : 
+                            ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+    </script>
 </body>
 </html>

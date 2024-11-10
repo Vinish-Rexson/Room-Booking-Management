@@ -11,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -34,7 +35,7 @@ public class BookingController {
     public String showDashboard(Model model) {
         List<Room> rooms = roomRepository.findAll();
         model.addAttribute("rooms", rooms);
-        return "room-dashboard";
+        return "dashboard";
     }
 
     /**
@@ -78,5 +79,11 @@ public class BookingController {
         }
         
         return "booking-confirmation";
+    }
+
+    @GetMapping("/api/rooms")
+    @ResponseBody
+    public List<Room> getRooms() {
+        return roomRepository.findAll();
     }
 }
