@@ -126,6 +126,14 @@
         .btn-success {
             background-color: var(--success-color);
         }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+
+        .btn-danger:hover {
+            background-color: #a93226;
+        }
     </style>
 </head>
 <body>
@@ -190,6 +198,30 @@
             })
             .catch(error => console.error('Error fetching rooms:', error));
 
+        function checkoutRoom(roomId) {
+            if (confirm('Are you sure you want to check out this room?')) {
+                fetch(`/api/checkout/${roomId}`, {
+                    method: 'POST'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Refresh the dashboard
+                        fetch('/api/rooms')
+                            .then(response => response.json())
+                            .then(rooms => {
+                                updateDashboard(rooms);
+                            });
+                    } else {
+                        alert('Error checking out room');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error checking out room');
+                });
+            }
+        }
+
         function updateDashboard(rooms) {
             // Update statistics
             document.getElementById('totalRooms').textContent = rooms.length;
@@ -203,13 +235,16 @@
                     <td>${room.name}</td>
                     <td>${room.description}</td>
                     <td>${room.capacity}</td>
-                    <td class="${room.available ? 'status-available' : 'status-unavailable'}">
-                        ${room.available ? 'Available' : 'Occupied'}
+                    <td>
+                        <span class="status-badge ${room.available ? 'status-available' : 'status-unavailable'}">
+                            ${room.available ? 'Available' : 'Occupied'}
+                        </span>
                     </td>
                     <td>
                         ${room.available ? 
                             `<a href="/book-room?roomId=${room.id}" class="btn btn-primary">Book</a>` : 
-                            ''}
+                            `<a href="/checkout/${room.id}" class="btn btn-danger">Check Out</a>`
+                        }
                     </td>
                 </tr>
             `).join('');

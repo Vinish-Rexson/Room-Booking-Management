@@ -6,15 +6,18 @@ import com.example.roombooking.repository.BookingRepository;
 import com.example.roombooking.repository.RoomRepository;
 import com.example.roombooking.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 public class BookingController {
@@ -85,5 +88,88 @@ public class BookingController {
     @ResponseBody
     public List<Room> getRooms() {
         return roomRepository.findAll();
+    }
+
+    @PostMapping("/api/checkout/{roomId}")
+    @ResponseBody
+    public ResponseEntity<?> checkoutRoomById(@PathVariable Long roomId) {
+        Optional<Room> roomOptional = roomRepository.findById(roomId);
+        
+        if (roomOptional.isPresent()) {
+            Room room = roomOptional.get();
+            room.setAvailable(true);
+            roomRepository.save(room);
+            return ResponseEntity.ok().build();
+        }
+        
+        return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/checkout/{roomId}")
+    public String showCheckoutPage(@PathVariable Long roomId, Model model) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new RuntimeException("Room not found"));
+        
+        // Get all bookings and take the most recent one
+        List<Booking> bookings = bookingRepository.findByRoomAndCheckOutDateGreaterThanEqualOrderByCheckOutDateAsc(room, LocalDate.now());
+        
+        if (!bookings.isEmpty()) {
+            // Get the most recent booking
+            Booking currentBooking = bookings.get(0);
+            model.addAttribute("booking", currentBooking);
+            return "checkout";
+        }
+        
+        return "redirect:/dashboard";
+    }
+
+    @PostMapping("/checkout/{roomId}")
+    public String processCheckout(@PathVariable Long roomId) {
+        Optional<Room> roomOptional = roomRepository.findById(roomId);
+        if (roomOptional.isPresent()) {
+            Room room = roomOptional.get();
+            List<Booking> bookings = bookingRepository.findByRoomAndCheckOutDateGreaterThanEqualOrderByCheckOutDateAsc(room, LocalDate.now());
+            
+            if (!bookings.isEmpty()) {
+                Booking booking = bookings.get(0);
+                // Reset room capacity
+                room.setCapacity(room.getCapacity() + booking.getNumberOfGuests());
+                room.setAvailable(true);
+                roomRepository.save(room);
+                bookingRepository.delete(booking);
+            }
+        }
+        return "redirect:/dashboard";
+    }
+
+    @GetMapping("/api/booking/{id}")
+    @ResponseBody
+    public ResponseEntity<Booking> getBooking(@PathVariable Long id) {
+        Optional<Booking> booking = bookingRepository.findById(id);
+        return booking.map(ResponseEntity::ok)
+                     .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/api/checkout/{bookingId}")
+    @ResponseBody
+    public ResponseEntity<?> checkoutBooking(@PathVariable Long bookingId) {
+        Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
+        
+        if (bookingOpt.isPresent()) {
+            Booking booking = bookingOpt.get();
+            Room room = booking.getRoom();
+            
+            // Reset room capacity and availability
+            room.setCapacity(room.getCapacity() + booking.getNumberOfGuests());
+            room.setAvailable(true);
+            
+            // Save changes
+            roomRepository.save(room);
+            bookingRepository.delete(booking);
+            
+            return ResponseEntity.ok().build();
+        }
+        
+        return ResponseEntity.notFound().build();
     }
 }
