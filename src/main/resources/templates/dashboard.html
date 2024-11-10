@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Room Booking Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .rooms-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 5px;
+        }
+        .rooms-table th, .rooms-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .rooms-table th {
+            background-color: #34495e;
+            color: white;
+        }
+        .status-available {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .status-unavailable {
+            color: #c0392b;
+            font-weight: bold;
+        }
+        .action-buttons {
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-success {
+            background-color: #2ecc71;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>Room Booking Dashboard</h1>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <h3>Total Rooms</h3>
+                <p th:text="${rooms.size()}">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Available Rooms</h3>
+                <p th:text="${rooms.stream().filter(room -> room.isAvailable()).count()}">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Occupied Rooms</h3>
+                <p th:text="${rooms.stream().filter(room -> !room.isAvailable()).count()}">0</p>
+            </div>
+        </div>
+
+        <table class="rooms-table">
+            <thead>
+                <tr>
+                    <th>Room Name</th>
+                    <th>Description</th>
+                    <th>Capacity</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="room : ${rooms}">
+                    <td th:text="${room.name}"></td>
+                    <td th:text="${room.description}"></td>
+                    <td th:text="${room.capacity}"></td>
+                    <td th:class="${room.available ? 'status-available' : 'status-unavailable'}"
+                        th:text="${room.available ? 'Available' : 'Occupied'}">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="action-buttons">
+            <a href="/book-room" class="btn btn-primary">Book a Room</a>
+            <a href="/rooms" class="btn btn-success">Manage Rooms</a>
+        </div>
+    </div>
+</body>
+</html> 

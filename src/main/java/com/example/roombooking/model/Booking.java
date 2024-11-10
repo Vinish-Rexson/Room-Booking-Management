@@ -23,6 +23,9 @@ public class Booking {
     @Column(nullable = false)
     private LocalDate checkOutDate;
 
+    @Column(nullable = false)
+    private int numberOfGuests;
+
     // Getters and Setters
 
     public Long getId() {
@@ -63,5 +66,13 @@ public class Booking {
 
     public void setCheckOutDate(LocalDate checkOutDate) {
         this.checkOutDate = checkOutDate;
+    }
+
+    public int getNumberOfGuests() {
+        return numberOfGuests;
+    }
+
+    public void setNumberOfGuests(int numberOfGuests) {
+        this.numberOfGuests = numberOfGuests;
     }
 }

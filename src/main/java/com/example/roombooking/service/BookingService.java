@@ -26,18 +26,33 @@ public class BookingService {
     }
 
     // Make a booking
-    public Booking makeBooking(Long roomId, LocalDate checkInDate, LocalDate checkOutDate, String customerName) {
-        Optional<Room> room = roomRepository.findById(roomId);
-        if (room.isPresent() && room.get().isAvailable()) {
-            Booking booking = new Booking();
-            booking.setRoom(room.get());
-            booking.setCheckInDate(checkInDate);
-            booking.setCheckOutDate(checkOutDate);
-            booking.setCustomerName(customerName);
-            room.get().setAvailable(false); // Mark room as unavailable after booking
-            roomRepository.save(room.get());
-            return bookingRepository.save(booking);
+    public Booking makeBooking(Long roomId, LocalDate checkInDate, LocalDate checkOutDate, 
+                              String customerName, int numberOfGuests) {
+        Optional<Room> roomOptional = roomRepository.findById(roomId);
+        
+        if (roomOptional.isPresent()) {
+            Room room = roomOptional.get();
+            // Check if room is available and has sufficient capacity
+            if (room.isAvailable() && room.getCapacity() >= numberOfGuests) {
+                Booking booking = new Booking();
+                booking.setRoom(room);
+                booking.setCheckInDate(checkInDate);
+                booking.setCheckOutDate(checkOutDate);
+                booking.setCustomerName(customerName);
+                booking.setNumberOfGuests(numberOfGuests);
+                
+                // Update room capacity
+                room.setCapacity(room.getCapacity() - numberOfGuests);
+                
+                // If no more capacity, mark as unavailable
+                if (room.getCapacity() == 0) {
+                    room.setAvailable(false);
+                }
+                
+                roomRepository.save(room);
+                return bookingRepository.save(booking);
+            }
         }
-        return null; // Return null if room is not available or not found
+        return null;
     }
 }

@@ -2,24 +2,61 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Book a Room</title>
+    <style>
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 200px;
+            padding: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <h1>Book a Room</h1>
 
     <form th:action="@{/book-room}" method="post">
-        <label for="customerName">Name:</label>
-        <input type="text" id="customerName" name="customerName" required><br>
+        <div class="form-group">
+            <label for="customerName">Name:</label>
+            <input type="text" id="customerName" name="customerName" required>
+        </div>
 
-        <label for="room">Select Room:</label>
-        <select id="roomId" name="roomId" required>
-            <option th:each="room : ${rooms}" th:value="${room.id}" th:text="${room.name}"></option>
-        </select><br>
+        <div class="form-group">
+            <label for="roomId">Select Room:</label>
+            <select id="roomId" name="roomId" required>
+                <option th:each="room : ${rooms}" 
+                        th:value="${room.id}" 
+                        th:text="${room.name + ' (Capacity: ' + room.capacity + ')'}">
+                </option>
+            </select>
+        </div>
 
-        <label for="checkInDate">Check-in Date:</label>
-        <input type="date" id="checkInDate" name="checkInDate" required><br>
+        <div class="form-group">
+            <label for="numberOfGuests">Number of Guests:</label>
+            <input type="number" id="numberOfGuests" name="numberOfGuests" min="1" required>
+        </div>
 
-        <label for="checkOutDate">Check-out Date:</label>
-        <input type="date" id="checkOutDate" name="checkOutDate" required><br>
+        <div class="form-group">
+            <label for="checkInDate">Check-in Date:</label>
+            <input type="date" id="checkInDate" name="checkInDate" required>
+        </div>
+
+        <div class="form-group">
+            <label for="checkOutDate">Check-out Date:</label>
+            <input type="date" id="checkOutDate" name="checkOutDate" required>
+        </div>
 
         <button type="submit">Book Now</button>
     </form>
